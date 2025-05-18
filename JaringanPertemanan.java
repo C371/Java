@@ -26,6 +26,7 @@ public class JaringanPertemanan {
         }
         graf.get(mhs1).add(mhs2);
         graf.get(mhs2).add(mhs1);
+        System.out.println("Mahasiswa berhasil ditambahkan");
     }
 
     //fungsi untuk menghapus mahasiswa serta semua hubungannya
@@ -38,9 +39,10 @@ public class JaringanPertemanan {
             graf.get(teman).remove(nama);
         }
         graf.remove(nama);
+        System.out.println("Mahasiswa berhasil dihapus");
     }
 
-    //fungsi untuk mencari teman antar 2 mahasiswa
+    //fungsi untuk mencari hubungan teman antar 2 mahasiswa
     public Set<String> cariTemanBersama(String mhs1, String mhs2) {
         if (!graf.containsKey(mhs1) || !graf.containsKey(mhs2)) {
             System.out.println("Salah satu mahasiswa tidak ditemukan.");
@@ -68,20 +70,79 @@ public class JaringanPertemanan {
 
     //main
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
         JaringanPertemanan jp = new JaringanPertemanan();
+        int pilihan;
 
-        jp.tambahMahasiswa("A", Arrays.asList("B", "C"));
-        jp.tambahMahasiswa("D", Arrays.asList("B", "C"));
-        jp.tambahPertemanan("A", "D");
+        do {
+            System.out.println("\n--- MENU JARINGAN PERTEMANAN ---");
+            System.out.println("1. Tambah Mahasiswa & Teman");
+            System.out.println("2. Tambah Pertemanan antara 2 Mahasiswa");
+            System.out.println("3. Hapus Mahasiswa");
+            System.out.println("4. Cari Teman Bersama");
+            System.out.println("5. Tampilkan Daftar Teman");
+            System.out.println("6. Keluar");
+            System.out.print("Pilih menu (1-6): ");
+            pilihan = scanner.nextInt();
+            scanner.nextLine();
 
-        jp.tampilkanTeman("A");
-        jp.tampilkanTeman("D");
+            switch (pilihan) {
+                case 1:
+                    System.out.print("Nama mahasiswa: ");
+                    String nama = scanner.nextLine();
 
-        Set<String> temanBersama = jp.cariTemanBersama("A", "D");
-        System.out.println("Teman bersama A dan D: " + temanBersama);
+                    System.out.print("Masukkan daftar teman (pisahkan dengan koma): ");
+                    String inputTeman = scanner.nextLine();
+                    List<String> daftarTeman = new ArrayList<>();
+                    if (!inputTeman.isEmpty()) {
+                        daftarTeman = Arrays.asList(inputTeman.split(",\\s*"));
+                    }
 
-        jp.hapusMahasiswa("C");
-        jp.tampilkanTeman("A");
-        jp.tampilkanTeman("D");
+                    jp.tambahMahasiswa(nama, daftarTeman);
+                    System.out.println("Mahasiswa dan pertemanannya ditambahkan.");
+                    break;
+
+                case 2:
+                    System.out.print("Nama mahasiswa 1: ");
+                    String mhs1 = scanner.nextLine();
+                    System.out.print("Nama mahasiswa 2: ");
+                    String mhs2 = scanner.nextLine();
+
+                    jp.tambahPertemanan(mhs1, mhs2);
+                    break;
+
+                case 3:
+                    System.out.print("Nama mahasiswa yang ingin dihapus: ");
+                    String hapusNama = scanner.nextLine();
+                    jp.hapusMahasiswa(hapusNama);
+                    break;
+
+                case 4:
+                    System.out.print("Nama mahasiswa pertama: ");
+                    String tm1 = scanner.nextLine();
+                    System.out.print("Nama mahasiswa kedua: ");
+                    String tm2 = scanner.nextLine();
+
+                    Set<String> hasil = jp.cariTemanBersama(tm1, tm2);
+                    System.out.println("Teman bersama: " + hasil);
+                    break;
+
+                case 5:
+                    System.out.print("Nama mahasiswa: ");
+                    String tampilNama = scanner.nextLine();
+                    jp.tampilkanTeman(tampilNama);
+                    break;
+
+                case 6:
+                    System.out.println("Program selesai.");
+                    break;
+
+                default:
+                    System.out.println("Pilihan tidak valid.");
+            }
+
+        } while (pilihan != 6);
+
+        scanner.close();
+        }
     }
-}
