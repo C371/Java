@@ -7,16 +7,16 @@ Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
 - Menampilkan informasi dengan antarmuka menu berbasis teks
 
 ## Struktur Direktori Program
- ─ Main.java
-     ─ MainPage.java
-         ─ DoctorLogin.java
-         ─ PatientRecordManagement.java
-         ─ AppointmentManagement.java
-         ─ AppointmentMap.java
- ─ PatientRecords.csv
- ─ DoctorRecords.csv
- ─ AppointmentRecords.csv
- ─ Schedule.csv
+ - Main.java
+     - MainPage.java
+         - DoctorLogin.java
+         - PatientRecordManagement.java
+         - AppointmentManagement.java
+         - AppointmentMap.java
+ - PatientRecords.csv
+ - DoctorRecords.csv
+ - AppointmentRecords.csv
+ - Schedule.csv
 
 ## Cara Penggunaan Program
 
@@ -27,6 +27,10 @@ Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
 2. **Kompilasi Semua File**
    ```bash
    javac *.java
+
+3. **Jalankan Program**
+   ```bash
+   java Main
 
 Fitur Utama:
 - **Login Dokter**: Dokter dapat login menggunakan username dan password yang telah ditentukan.
