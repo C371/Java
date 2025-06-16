@@ -5,6 +5,22 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.time.LocalDateTime;
 
+class Doctor {
+    int id;
+    String name;
+    String specialty;
+    String loginTime;
+    String logoutTime;
+
+    public Doctor(int id, String name, String specialty, String loginTime, String logoutTime) {
+        this.id = id;
+        this.name = name;
+        this.specialty = specialty;
+        this.loginTime = loginTime;
+        this.logoutTime = logoutTime;
+    }
+}
+
 public class DoctorLogin {
     static public final String RESET = "\u001B[0m";
     static public final String RED = "\u001B[31m";
@@ -67,23 +83,27 @@ public class DoctorLogin {
         if(doctor != null){
             System.out.println(GREEN + doctor.name + " logged in successfully." + RESET);
             rewriteCSV();
+            MainPage.redirect(1);
         } else {
             System.out.println(RED + "Doctor not found." + RESET);
         }
-        main.redirect();
+        
     }
 
     public void logoutDoctor(int id){
         Doctor doctor = findDoctorByID(id);
         if(doctor != null && doctor.loginTime != "0"){
-            doctor.logoutTime = LocalDateTime.now().toString();
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            String dateTime = currentDateTime.toLocalDate() + " " + currentDateTime.toLocalTime();
+            doctor.logoutTime = dateTime.substring(0,19);
             doctor.loginTime = "0";
             rewriteCSV();
             System.out.println(GREEN + doctor.name + " logged out successfully." + RESET);
+            MainPage.redirect(2);
         } else {
             System.out.println(RED + "Doctor not found." + RESET);
         }
-        main.redirect();
+        
     }
 
     public void printTab(String str){
@@ -101,9 +121,27 @@ public class DoctorLogin {
             return;
         }
         System.out.println("ID   | Name           | Specialty");
-        main.singleLine();
+        MainPage.singleLine();
         while(current != null){
             if(!current.doctor.loginTime.equals("0")){
+                System.out.print(current.doctor.id + " | ");
+                printTab(current.doctor.name);
+                System.out.println(current.doctor.specialty);
+            }
+            current = current.next;
+        }
+    }
+
+    public void getAvailableDoctors(String specialty){
+        Node current = head;
+        if(current == null){
+            System.out.println("No doctors available.");
+            return;
+        }
+        System.out.println("ID   | Name           | Specialty");
+        MainPage.singleLine();
+        while(current != null){
+            if(current.doctor.specialty.equals(specialty)){
                 System.out.print(current.doctor.id + " | ");
                 printTab(current.doctor.name);
                 System.out.println(current.doctor.specialty);

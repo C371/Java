@@ -1,6 +1,21 @@
 // import java.io.IOException;
 // import java.io.BufferedWriter;
 // import java.io.FileWriter;
+class Patient {
+    int id;
+    String name;
+    int age;
+    String address;
+    String phone;
+
+    public Patient(int id, String name, int age, String address, String phone){
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.address = address;
+        this.phone = phone;
+    }
+}
 
 public class PatientRecordManagement {
     static class Node{
@@ -80,17 +95,17 @@ public class PatientRecordManagement {
         }
         Node current = head;
         while(current != null){
-            main.printTab("ID");
+            MainPage.printTab("ID");
             System.out.println(current.patient.id);
-            main.printTab("Full Name");
+            MainPage.printTab("Full Name");
             System.out.println(current.patient.name);
-            main.printTab("Age");
+            MainPage.printTab("Age");
             System.out.println(current.patient.age);
-            main.printTab("Address");
+            MainPage.printTab("Address");
             System.out.println(current.patient.address);
-            main.printTab("Phone Number");
+            MainPage.printTab("Phone Number");
             System.out.println(current.patient.phone);
-            main.singleLine();
+            MainPage.singleLine();
             current = current.next;
         }
     }
