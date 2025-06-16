@@ -29,6 +29,7 @@ Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
    javac *.java
 
 3. **Jalankan Program**
+   ```bash
    java Main
 
 Fitur Utama:
