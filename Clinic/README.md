@@ -28,5 +28,8 @@ Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
    ```bash
    javac *.java
 
+3. **Jalankan Program**
+   java Main
+
 Fitur Utama:
 - **Login Dokter**: Dokter dapat login menggunakan username dan password yang telah ditentukan.
