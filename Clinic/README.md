@@ -1,18 +1,30 @@
-## Getting Started
+## Clinic Management System
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
 
-## Folder Structure
+- Mengelola data pasien dan dokter
+- Mengatur jadwal konsultasi/kunjungan dokter
+- Menampilkan informasi dengan antarmuka menu berbasis teks
 
-The workspace contains two folders by default, where:
+## Struktur Direktori Program
+ ── Main.java
+     ── MainPage.java
+         ── DoctorLogin.java
+         ── PatientRecordManagement.java
+         ── AppointmentManagement.java
+         ── AppointmentMap.java
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+ ── PatientRecords.csv
+ ── DoctorRecords.csv
+ ── AppointmentRecords.csv
+ ── Schedule.csv
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+## Cara Penggunaan Program
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+1. **Persiapan**
+    -
 
-## Dependency Management
+2. **Kompilasi Semua File**
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+Fitur Utama:
+- **Login Dokter**: Dokter dapat login menggunakan username dan password yang telah ditentukan.
