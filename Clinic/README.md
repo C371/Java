@@ -5,6 +5,12 @@ Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
 - Mengelola data pasien dan dokter
 - Mengatur jadwal konsultasi/kunjungan dokter
 - Menampilkan informasi dengan antarmuka menu berbasis teks
+
+Anggota Kelompok:
+* Daffa Arkan Taqiya [L0124047]
+* Erika Nur Amalia [L0124049]
+* Azzaral Aswad Asshiddiqy [L0124090]
+* Devan Huda Fadhilah [L0124095]
 ------
 
 ## Struktur Direktori Program
