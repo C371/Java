@@ -35,7 +35,7 @@ Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
    java Main
 ------
 
-Fitur Utama:
+## Fitur Utama:
 1. **Login Dokter**
      - Dokter dapat login menggunakan username dan password yang telah ditentukan.
      - Mendukung proses login untuk dokter berdasarkan username dan password.
@@ -58,3 +58,8 @@ Fitur Utama:
 5. **Navigasi Menu**
      - Menu berbasis teks sebagai antarmuka utama pengguna.
      - Menghubungkan semua fitur di atas melalui Main.java.
+
+6. **Pencarian Pasien dengan Binary Search Tree (BST)**
+    - Menyimpan dan mengelola data pasien dalam struktur pohon biner.
+    - Memungkinkan pencarian pasien berdasarkan ID dengan efisiensi tinggi.
+    - Diimplementasikan dalam file BST.java.
