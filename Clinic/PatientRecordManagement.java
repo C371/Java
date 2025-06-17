@@ -18,6 +18,10 @@ class Patient {
 }
 
 public class PatientRecordManagement {
+    static public final String RESET = "\u001B[0m";
+    static public final String RED = "\u001B[31m";
+    static public final String GREEN = "\u001B[32m";
+    
     static class Node{
         Patient patient;
         Node next;
@@ -30,7 +34,7 @@ public class PatientRecordManagement {
 
     private Node head;
 
-    public Node getHead() {
+    public Node getHead(){
         return head;
     }
 
@@ -77,15 +81,27 @@ public class PatientRecordManagement {
         return null;
     }
 
-    public Node findPatientByName(String name){
+    public void findPatientByName(String name){
         Node current = head;
         while(current != null){
-            if(current.patient.name.equals(name)){
-                return current;
+            if(current.patient.name.equalsIgnoreCase(name)){
+                System.out.println("Patient found:");
+                MainPage.printTab("ID");
+                System.out.println(current.patient.id);
+                MainPage.printTab("Full Name");
+                System.out.println(current.patient.name);
+                MainPage.printTab("Age");
+                System.out.println(current.patient.age);
+                MainPage.printTab("Address");
+                System.out.println(current.patient.address);
+                MainPage.printTab("Phone Number");
+                System.out.println(current.patient.phone);
+                MainPage.singleLine();
+                return;
             }
             current = current.next;
         }
-        return null;
+        System.out.println(RED + "Patient not found." + RESET);
     }
 
     public void displayAllPatients(){

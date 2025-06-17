@@ -1,60 +1,18 @@
-## Clinic Management System
+## Getting Started
 
-Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
+Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
 
-- Mengelola data pasien dan dokter
-- Mengatur jadwal konsultasi/kunjungan dokter
-- Menampilkan informasi dengan antarmuka menu berbasis teks
-------
+## Folder Structure
 
-## Struktur Direktori Program
- - Main.java
-     - MainPage.java
-         - DoctorLogin.java
-         - PatientRecordManagement.java
-         - AppointmentManagement.java
-         - AppointmentMap.java
- - PatientRecords.csv
- - DoctorRecords.csv
- - AppointmentRecords.csv
- - Schedule.csv
-------
+The workspace contains two folders by default, where:
 
-## Cara Penggunaan Program
+- `src`: the folder to maintain sources
+- `lib`: the folder to maintain dependencies
 
-1. **Persiapan**
-    - Pastikan Anda telah menginstal Java Development Kit (JDK) 8.
-    - Buka terminal atau command prompt, dan pindah ke direktori `Clinic/`.
+Meanwhile, the compiled output files will be generated in the `bin` folder by default.
 
-2. **Kompilasi Semua File**
-   ```bash
-   javac *.java
+> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
 
-3. **Jalankan Program**
-   ```bash
-   java Main
-------
+## Dependency Management
 
-Fitur Utama:
-1. **Login Dokter**
-     - Dokter dapat login menggunakan username dan password yang telah ditentukan.
-     - Mendukung proses login untuk dokter berdasarkan username dan password.
-     - Menggunakan struktur data linked list untuk menyimpan data login dokter.
-
-2. **Manajemen Data Pasien**
-     - Menambahkan dan menampilkan daftar pasien.
-     - Menggunakan linked list buatan sendiri.
-     - Menyimpan data pasien ke file PatientRecords.csv.
-
-3. **Penjadwalan Janji Temu**
-     - Menjadwalkan janji temu antara pasien dan dokter.
-     - Menggunakan struktur data Queue untuk mengelola antrean.
-     - Menyimpan data dalam AppointmentRecords.csv.
-
-4. **Pemetaan Janji Temu**
-     - Menyediakan tampilan visual janji temu berdasarkan ID pasien.
-     - Mengelola dan mencari janji temu dari data yang tersedia.
-
-5. **Navigasi Menu**
-     - Menu berbasis teks sebagai antarmuka utama pengguna.
-     - Menghubungkan semua fitur di atas melalui Main.java.
+The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).

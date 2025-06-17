@@ -14,6 +14,7 @@ public class MainPage {
     static public final String RED = "\u001B[31m";
     static public final String GREEN = "\u001B[32m";
     static PatientRecordManagement prm = new PatientRecordManagement();
+    static BST patientBST = new BST(); 
     static DoctorLogin doctorLogin = new DoctorLogin();
     static int role = 0;
     static int doctorID = 0;
@@ -29,8 +30,9 @@ public class MainPage {
             while((line = reader.readLine()) != null){
                 String[] p = line.split("\\|");
                 prm.addPatient(new Patient(Integer.parseInt(p[0].trim()), p[1].trim(), Integer.parseInt(p[2].trim()), p[3].trim(), p[4].trim()));
+                patientBST.insertPatient(new Patient(Integer.parseInt(p[0].trim()), p[1].trim(), Integer.parseInt(p[2].trim()), p[3].trim(), p[4].trim()));
             }
-            System.out.println("Data loaded");
+            // System.out.println("Data loaded");
         }
         catch(Exception e){
             System.out.println("Error.");
@@ -68,6 +70,29 @@ public class MainPage {
         catch(IOException e){
             System.out.println("Error reading file.");
         }
+        try(BufferedReader reader = new BufferedReader(new FileReader("AppointmentRecords.csv"))){
+            reader.readLine();
+            String line;
+            while((line = reader.readLine()) != null){
+                String[] data = line.split("\\|");
+                if(data.length == 4){
+                    int appointmentID = Integer.parseInt(data[0].trim());
+                    int patientID = Integer.parseInt(data[1].trim());
+                    int doctorID = Integer.parseInt(data[2].trim());
+                    String time = data[3].trim();
+                    int key = doctorID % 1000 - 1;
+                    AppointmentManagement appointmentManagement = appointment.get(key);
+                    if(appointmentManagement == null){
+                        appointmentManagement = new AppointmentManagement(6);
+                    }
+                    appointmentManagement.scheduleAppointment(new Appointment(appointmentID, patientID, doctorID, time));
+                    appointment.put(key, appointmentManagement);
+                }
+            }
+        }
+        catch(IOException e){
+            System.out.println("Error reading file.");
+        }
     }
 
     static void appendCSV(String patient){
@@ -96,6 +121,26 @@ public class MainPage {
         }
     }
 
+    static void rewriteAppointmentCSV(){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("AppointmentRecords.csv"))){
+            writer.write("Appointment ID|Patient ID|Doctor ID|Time");
+            writer.newLine();
+            for (int i = 0; i < 6; i++){
+                AppointmentManagement am = appointment.get(i);
+                if (am != null){
+                    for (int j = 0; j < am.size; j++){
+                        Appointment app = am.appointment[(am.front + j) % am.capacity];
+                        writer.write(app.appointmentID + "|" + app.patientID + "|" + app.doctorID + "|" + app.time);
+                        writer.newLine();
+                    }
+                }
+            }
+        } 
+        catch (IOException e){
+            System.out.println("Error writing appointment file: " + e.getMessage());
+        }
+    }
+
     static void rewriteScheduleCSV(){
         try(BufferedWriter writer = new BufferedWriter(new FileWriter("Schedule.csv"))){
             for(int i = 0; i < schedules.length; i++){
@@ -117,15 +162,7 @@ public class MainPage {
 
     static void initialize(){
         readCSV();
-        // for(int i = 0; i < schedules.length; i++){
-        //     schedules[i][0] = "09:00 - 9:30";
-        //     schedules[i][1] = "09:30 - 10:00";
-        //     schedules[i][2] = "10:00 - 10:30";
-        //     schedules[i][3] = "10:30 - 11:00";
-        //     schedules[i][4] = "11:00 - 11:30";
-        //     schedules[i][5] = "11:30 - 12:00";
-        // }
-        finalSchedule[0] = "09:00 - 9:30";
+        finalSchedule[0] = "09:00 - 09:30";
         finalSchedule[1] = "09:30 - 10:00";
         finalSchedule[2] = "10:00 - 10:30";
         finalSchedule[3] = "10:30 - 11:00";
@@ -138,7 +175,7 @@ public class MainPage {
             System.out.print("Redirecting to ");
             switch(code){
                 case 1: 
-                    System.out.println("Main Page...");
+                    System.out.println("Main Menu...");
                     doubleLine();
                     Thread.sleep(3000);
                     mainPage(); 
@@ -166,7 +203,7 @@ public class MainPage {
 
     static void printTab(String str){
         System.out.print(str);
-        for(int i = 0; i < 13 - str.length(); i++){
+        for(int i = 0; i < 15 - str.length(); i++){
             System.out.print(" ");
         }
         System.out.print(": ");
@@ -194,6 +231,22 @@ public class MainPage {
         System.out.println(patient.patient.address);
         printTab("Phone Number");
         System.out.println(patient.patient.phone);
+        singleLine();
+    }
+
+     // New method to display patient found from BST
+    static void patientFoundBST(Patient patient){
+        System.out.println("Patient found: ");
+        printTab("ID");
+        System.out.println(patient.id);
+        printTab("Full Name");
+        System.out.println(patient.name);
+        printTab("Age");
+        System.out.println(patient.age);
+        printTab("Address");
+        System.out.println(patient.address);
+        printTab("Phone Number");
+        System.out.println(patient.phone);
         singleLine();
     }
 
@@ -227,7 +280,9 @@ public class MainPage {
         switch(menu){
             case 1: 
                 printTitle("SUCCESS");
-                prm.addPatient(new Patient(lastID + 1, name, age, address, phone));
+                Patient newPatient = new Patient(lastID + 1, name, age, address, phone);
+                prm.addPatient(newPatient);
+                patientBST.insertPatient(newPatient);
                 appendCSV(lastID + 1 + "|" + name + "|" + age + "|" + address + "|" + phone);
                 System.out.println(GREEN + "Patient added successfully." + RESET);
                 break;
@@ -259,6 +314,7 @@ public class MainPage {
                 case 1: 
                     printTitle("SUCCESS");
                     prm.removePatientById(id);
+                    patientBST.removePatient(id);
                     rewriteCSV();
                     System.out.println(GREEN + "Patient removed successfully." + RESET);
                     break;
@@ -278,7 +334,7 @@ public class MainPage {
     static void searchPatient(int id){
         if(prm.findPatientById(id) != null){
             patientFound(id);
-            System.out.println("[1] Search Again\n[2] Go Back to Main Page");
+            System.out.println("[1] Search Again\n[2] Main Menu");
             singleLine();
             System.out.print("Please select an option: ");
             int menu = input.nextInt();
@@ -294,6 +350,55 @@ public class MainPage {
         }
     }
 
+    static void searchPatientBST(int id){
+        Patient patient = patientBST.searchPatient(id);
+        if(patient != null){
+            patientFoundBST(patient);
+            System.out.println("[1] Search Again\n[2] Main Menu");
+            singleLine();
+            System.out.print("Please select an option: ");
+            int menu = input.nextInt();
+            input.nextLine();
+            switch(menu){
+                case 1: searchPatientBSTPage(); break;
+                case 2: mainPage(); break;
+                default:
+            }
+        }
+        else{
+            System.out.println(RED + "Patient not found." + RESET);
+            System.out.println("[1] Search Again\n[2] Main Menu");
+            singleLine();
+            System.out.print("Please select an option: ");
+            int menu = input.nextInt();
+            input.nextLine();
+            switch(menu){
+                case 1: searchPatientBSTPage(); break;
+                case 2: mainPage(); break;
+                default:
+            }
+        }
+    }
+
+    static void searchByName(){
+        System.out.print("\033[H\033[2J");
+        printTitle("SEARCH PATIENT");
+        System.out.print("Patient Name: ");
+        String name = input.nextLine();
+        prm.findPatientByName(name);
+        // singleLine();
+        System.out.println("[1] Search Again\n[2] Main Menu");
+        singleLine();
+        System.out.print("Please select an option: ");
+        int menu = input.nextInt();
+        input.nextLine();
+        switch(menu){
+            case 1: searchByName(); break;
+            case 2: mainPage(); break;
+            default:
+        }
+    }
+
     static void searchPatientPage(){
         System.out.print("\033[H\033[2J");
         printTitle("SEARCH PATIENT");
@@ -303,11 +408,49 @@ public class MainPage {
         searchPatient(id);
     }
 
+    static void searchPatientBSTPage(){
+        System.out.print("\033[H\033[2J");
+        printTitle("SEARCH PATIENT (BST - FAST SEARCH)");
+        System.out.print("Patient ID: ");
+        int id = input.nextInt();
+        input.nextLine();
+        searchPatientBST(id);
+    }
+
     static void displayAllPatients(){
         System.out.print("\033[H\033[2J");
         printTitle("REGISTERED PATIENTS");
         prm.displayAllPatients();
         // singleLine();
+        System.out.println("[1] Search Patient by ID\n[2] Search Patient by Name\n[3] Main Menu");
+        singleLine();
+        System.out.print("Please select an option: ");
+        int menu = input.nextInt();
+        input.nextLine();
+        switch(menu){
+            case 1: searchPatientPage(); break;
+            case 2: searchByName(); break;
+            case 3: mainPage(); break;
+            default:
+        }
+    }
+
+    static void displayAllPatientsBST(){
+        System.out.print("\033[H\033[2J");
+        printTitle("REGISTERED PATIENTS (BST - SORTED BY ID)");
+        patientBST.inOrderDisplay();
+        // singleLine();
+        System.out.println("[1] Search Patient by ID\n[2] Search Patient by Name\n[3] Main Menu");
+        singleLine();
+        System.out.print("Please select an option: ");
+        int menu = input.nextInt();
+        input.nextLine();
+        switch(menu){
+            case 1: searchPatientPage(); break;
+            case 2: searchByName(); break;
+            case 3: mainPage(); break;
+            default:
+        }
     }
 
     static void doctorFound(int id){
@@ -393,12 +536,22 @@ public class MainPage {
         System.out.print("\033[H\033[2J");
         printTitle("LAST LOGGED-IN DOCTOR");
         doctorLogin.getAllLoggedInDoctors();
+        singleLine();
+        System.out.println("[1] Main Menu");
+        singleLine();
+        System.out.print("Please select an option: ");
+        int menu = input.nextInt();
+        input.nextLine();
+        switch(menu){
+            case 1: mainPage(); break;
+            default:
+        }
     }
 
     static void scheduleAppointment(){
         System.out.print("\033[H\033[2J");
-        printTitle("SCHEDULE APPOINTMENT");
-        System.out.println("Polyclinic:");
+        printTitle("POLYCLINIC");
+        // System.out.println("Polyclinic:");
         System.out.println("[1] General Clinic\n[2] Dental Clinic");
         singleLine();
         System.out.print("Please select a polyclinic: ");
@@ -413,8 +566,8 @@ public class MainPage {
                 return;
         }
         System.out.print("\033[H\033[2J");
-        printTitle("SCHEDULE APPOINTMENT");
-        System.out.println("Available Doctors: ");
+        printTitle("AVAILABLE DOCTORS");
+        // System.out.println("Available Doctors: ");
         doctorLogin.getAvailableDoctors(specialty);
         singleLine();
         System.out.print("Please select a doctor by ID: ");
@@ -447,7 +600,7 @@ public class MainPage {
             System.out.println(RED + "Invalid schedule." + RESET);
             return;
         }
-        if(schedules[0][schedule - 1] == "0"){
+        if(schedules[key - 1][schedule - 1].equals("0")){
             System.out.println(RED + "Schedule not available." + RESET);
             return;
         }
@@ -476,16 +629,18 @@ public class MainPage {
                 for(int i = 0; i < 6; i++){
                     if(schedules[key - 1][i].equals("0")){
                         number++;
-                        break;
+                        // break;
                     }
                 }
                 int appointmentID = key * 1000 + number + 1;
-                AppointmentManagement appointmentManagement = appointment.get(key);
+                AppointmentManagement appointmentManagement = appointment.get(key - 1);
                 if(appointmentManagement == null){
                     appointmentManagement = new AppointmentManagement(6);
                 }
-                appointmentManagement.scheduleAppointment(new Appointment(appointmentID, patientID, doctorID, schedules[0][schedule - 1], "0", "0", "0"));
-                appointment.put(key, appointmentManagement);
+                appointmentManagement.scheduleAppointment(new Appointment(appointmentID, patientID, doctorID, schedules[key - 1][schedule - 1]));
+                appointment.put(key - 1, appointmentManagement);
+                rewriteAppointmentCSV();
+                // appointmentManagement.rewriteCSV();
                 schedules[key - 1][schedule - 1] = "0";
                 rewriteScheduleCSV();
                 System.out.println(GREEN + "Appointment scheduled successfully." + RESET);
@@ -500,19 +655,103 @@ public class MainPage {
         }
     }
 
+    static void processAppointment(){
+        System.out.print("\033[H\033[2J");
+        printTitle("PROCESS APPOINTMENT");
+        int key = doctorID % 1000 - 1;
+        AppointmentManagement appointmentManagement = appointment.get(key);
+        if(appointmentManagement == null || appointmentManagement.size == 0){
+            System.out.println(RED + "No appointments to process." + RESET);
+            redirect(1);
+            return;
+        }
+        String time = appointmentManagement.appointment[appointmentManagement.front].time;
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        String currentTime = currentDateTime.toLocalDate() + " " + currentDateTime.toLocalTime();
+        currentTime = currentTime.substring(10, 15);
+        int currentHour = Integer.parseInt(currentTime.replace(":", "").trim());
+        int startHour = Integer.parseInt(time.substring(0, 4).replace(":", "").trim());
+        int endHour = Integer.parseInt(time.substring(7, 11).replace(":", "").trim());
+        if(currentHour < startHour || currentHour > endHour){
+            System.out.println(RED + "Cannot process appointment at this time." + RESET);
+            redirect(1);
+            return;
+        }
+        appointmentManagement.processNextAppointment();
+        rewriteAppointmentCSV();
+        for(int i = 0; i < 6; i++){
+            if(finalSchedule[i].equals(time)){
+                // System.out.println(finalSchedule[i]);
+                schedules[key][i] = finalSchedule[i];
+                break;
+            }
+        }
+        rewriteScheduleCSV();
+        System.out.print("\033[H\033[2J");
+        printTitle("SUCCESS");
+        System.out.println(GREEN + "Appointment processed successfully." + RESET);
+        singleLine();
+        System.out.println("[1] Process Next Appointment\n[2] Main Menu");
+        singleLine();
+        System.out.print("Please select an option: ");
+        int menu = input.nextInt();
+        input.nextLine();
+        switch(menu){
+            case 1: processAppointment(); break;
+            case 2: mainPage(); break;
+            default:
+        }
+        // System.out.println("Success");
+    }
+
+    static void displayAppointments(){
+        System.out.print("\033[H\033[2J");
+        printTitle("UPCOMING APPOINTMENTS");
+        if(role == 1){
+            // System.out.println("Upcoming Appointments for Patient ID: " + patientID);
+            // singleLine();
+            System.out.println("Appointment ID | Doctor ID | Time");   
+            singleLine();
+            for(int i = 0; i < 6; i++){
+                AppointmentManagement appointmentManagement = appointment.get(i);
+                if(appointmentManagement != null){
+                    appointmentManagement.viewPatientAppointments(patientID);
+                }
+            }
+        }
+        else if(role == 2){
+            int key = doctorID % 1000 - 1;
+            AppointmentManagement appointmentManagement = appointment.get(key);
+            appointmentManagement.viewUpcomingAppointments(doctorID);
+        }
+        else{
+
+        }
+        singleLine();
+        System.out.println("[1] Main Menu");
+        singleLine();
+        System.out.print("Please select an option: ");
+        int menu = input.nextInt();
+        input.nextLine();
+        switch(menu){
+            case 1: mainPage(); break;
+            default:
+        }
+    }
+
     static void mainPage(){
         System.out.print("\033[H\033[2J");
         printTitle("AMBALABU CLINIC");
         switch(role){
             case 1: 
-                System.out.println("[1] Schedule Appointment\n[2] Display Upcoming Appointments\n[0] Exit");
+                System.out.println("[1] Schedule Appointment\n[2] Display Upcoming Appointments\n[3] Login Menu\n[0] Exit");
                 break;
             case 2:
-                System.out.println("[1] Process Appointment\n[2] Display Upcoming Appointments\n[3] Logout");
+                System.out.println("[1] Process Appointment\n[2] Display Upcoming Appointments\n[3] Login Menu\n[4] Logout\n[0] Exit");
                 break;
             case 3: 
                 System.out.println("[1] Add New Patient\n[2] Remove Patient by ID\n[3] Search Patient by Name\n[4] Display All Patients");
-                System.out.println("[5] View Last Logged-in Doctor\n[6] Search Patient by ID\n[7] Display All Patients\n[0] Exit");
+                System.out.println("[5] View Last Logged-in Doctor\n[6] Search Patient by ID\n[7] Display All Patients\n[8] Login Menu\n[0] Exit");
         }
         // System.out.println("[1] Add New Patient\n[2] Remove Patient by ID\n[3] Search Patient by Name");
         // System.out.println("[4] Display All Patients\n[5] Doctor login\n[6] Doctor Logout");
@@ -527,27 +766,46 @@ public class MainPage {
             case 1: 
                 switch(role){
                     case 1: scheduleAppointment(); break;
-                    case 2: break;
+                    case 2: processAppointment(); break;
                     case 3: addNewPatient(); break;
                     default:
                 } break;
             case 2: 
                 switch(role){
-                    case 1: break;
-                    case 2: break;
+                    case 1: displayAppointments(); break;
+                    case 2: displayAppointments(); break;
                     case 3: removePatient(); break;
                     default:
                 } break;
             case 3: 
                 switch(role){
-                    case 2: doctorLogout(); break;
-                    case 3: searchPatientPage(); break;
+                    case 1: loginPage(); break;
+                    case 2: loginPage(); break;
+                    case 3: searchByName(); break;
                     default:
                 } break;
-            case 4: displayAllPatients(); break;
+            case 4: 
+                switch(role){
+                    case 2: doctorLogout(); break;
+                    case 3: displayAllPatients(); break;
+                    default:
+                } break;
             case 5: viewLastLoggedInDoctor(); break;
-            case 6: break;
-            case 7: break;
+            case 6: 
+                switch(role){
+                    case 3: searchPatientBSTPage(); break;
+                    default:
+                } break;
+            case 7: 
+                switch(role){
+                    case 3: displayAllPatientsBST(); break;
+                    default:
+                } break;
+            case 8:
+                switch(role){
+                    case 3: loginPage(); break;
+                    default:
+                } break;
             default:
         }
     }
@@ -588,8 +846,8 @@ public class MainPage {
 
     static void loginPage(){
         System.out.print("\033[H\033[2J");
-        printTitle("AMBALABU CLINIC");
-        System.out.println("Welcome to Ambalabu Clinic!");
+        printTitle("AMBALABU CLINIC (LOGIN PAGE)");
+        // System.out.println("Welcome to Ambalabu Clinic!");
         // singleLine();
         System.out.println("Login as:");
         System.out.println("[1] Patient\n[2] Doctor\n[3] Admin");
