@@ -8,16 +8,16 @@ Sistem managemen clinic berbasi Java ini memungkinkan pengguna untuk:
 ------
 
 ## Struktur Direktori Program
- - Main.java
-     - MainPage.java
-         - DoctorLogin.java
-         - PatientRecordManagement.java
-         - AppointmentManagement.java
-         - AppointmentMap.java
- - PatientRecords.csv
- - DoctorRecords.csv
- - AppointmentRecords.csv
- - Schedule.csv
+- `Main.java`
+    - `MainPage.java`
+        - `DoctorLogin.java`
+        - `PatientRecordManagement.java`
+        - `AppointmentManagement.java`
+        - `AppointmentMap.java`
+- `PatientRecords.csv`
+- `DoctorRecords.csv`
+- `AppointmentRecords.csv`
+- `Schedule.csv`
 ------
 
 ## Cara Penggunaan Program
