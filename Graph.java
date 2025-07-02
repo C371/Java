@@ -1,5 +1,3 @@
-import java.util.*;
-
 public class Graph {
 
     public enum Representation {
@@ -8,62 +6,59 @@ public class Graph {
 
     private final int numVertices;
     private final boolean isDirected;
-    private Representation currentRepresentation;
 
-    private List<List<Integer>> adjList;
     private int[][] adjMatrix;
+    private int[][] adjList;
+    private int[] adjListSize;
 
     public Graph(int numVertices, Representation initialRepresentation, boolean isDirected) {
         if (numVertices <= 0) throw new IllegalArgumentException("Jumlah simpul harus positif.");
         this.numVertices = numVertices;
-        this.currentRepresentation = initialRepresentation;
         this.isDirected = isDirected;
-
-        initializeAdjacencyList();
         initializeAdjacencyMatrix();
-    }
-
-    private void initializeAdjacencyList() {
-        adjList = new ArrayList<>(numVertices);
-        for (int i = 0; i < numVertices; i++) {
-            adjList.add(new LinkedList<>());
-        }
+        initializeAdjacencyList();
     }
 
     private void initializeAdjacencyMatrix() {
         adjMatrix = new int[numVertices][numVertices];
     }
 
+    private void initializeAdjacencyList() {
+        adjList = new int[numVertices][numVertices];
+        adjListSize = new int[numVertices];
+    }
+
     public void addEdge(int src, int dest) {
         if (src < 0 || dest < 0 || src >= numVertices || dest >= numVertices)
             throw new IllegalArgumentException("Simpul tidak valid.");
 
-        adjList.get(src).add(dest);
+        // adjacency matrix
         adjMatrix[src][dest] = 1;
+        if (!isDirected) adjMatrix[dest][src] = 1;
 
+        // adjacency list
+        adjList[src][adjListSize[src]++] = dest;
         if (!isDirected) {
-            adjList.get(dest).add(src);
-            adjMatrix[dest][src] = 1;
+            adjList[dest][adjListSize[dest]++] = src;
         }
     }
 
     public void BFS(int start) {
-        if (currentRepresentation != Representation.MATRIX) {
-        }
         boolean[] visited = new boolean[numVertices];
-        Queue<Integer> queue = new LinkedList<>();
+        int[] queue = new int[numVertices];
+        int front = 0, rear = 0;
 
         visited[start] = true;
-        queue.add(start);
+        queue[rear++] = start;
 
         System.out.print("BFS starting from vertex " + start + ": ");
-        while (!queue.isEmpty()) {
-            int u = queue.poll();
+        while (front < rear) {
+            int u = queue[front++];
             System.out.print(u + " ");
             for (int v = 0; v < numVertices; v++) {
                 if (adjMatrix[u][v] == 1 && !visited[v]) {
                     visited[v] = true;
-                    queue.add(v);
+                    queue[rear++] = v;
                 }
             }
         }
@@ -71,29 +66,24 @@ public class Graph {
     }
 
     public void DFS(int start) {
-        if (currentRepresentation != Representation.MATRIX) {
-        }
         boolean[] visited = new boolean[numVertices];
         System.out.print("DFS starting from vertex " + start + ": ");
         DFSUtil(start, visited);
         System.out.println();
     }
 
-    private void DFSUtil(int v, boolean[] visited) {
-        visited[v] = true;
-        System.out.print(v + " ");
-        for (int i = 0; i < numVertices; i++) {
-            if (adjMatrix[v][i] == 1 && !visited[i]) {
-                DFSUtil(i, visited);
+    private void DFSUtil(int u, boolean[] visited) {
+        visited[u] = true;
+        System.out.print(u + " ");
+        for (int v = 0; v < numVertices; v++) {
+            if (adjMatrix[u][v] == 1 && !visited[v]) {
+                DFSUtil(v, visited);
             }
         }
     }
 
     public boolean hasCycleUndirected() {
         if (isDirected) throw new UnsupportedOperationException("Graf harus tidak berarah.");
-        if (currentRepresentation != Representation.MATRIX) {
-        }
-
         boolean[] visited = new boolean[numVertices];
         for (int i = 0; i < numVertices; i++) {
             if (!visited[i]) {
@@ -117,9 +107,6 @@ public class Graph {
 
     public boolean hasCycleDirected() {
         if (!isDirected) throw new UnsupportedOperationException("Graf harus berarah.");
-        if (currentRepresentation != Representation.MATRIX) {
-        }
-
         boolean[] visited = new boolean[numVertices];
         boolean[] recStack = new boolean[numVertices];
         for (int i = 0; i < numVertices; i++) {
@@ -133,49 +120,34 @@ public class Graph {
     private boolean hasCycleDirectedUtil(int u, boolean[] visited, boolean[] recStack) {
         visited[u] = true;
         recStack[u] = true;
-
         for (int v = 0; v < numVertices; v++) {
             if (adjMatrix[u][v] == 1) {
                 if (!visited[v] && hasCycleDirectedUtil(v, visited, recStack)) return true;
                 else if (recStack[v]) return true;
             }
         }
-
         recStack[u] = false;
         return false;
     }
 
     public void printGraph() {
         System.out.println("Representasi Adjacency List:");
-        printAdjacencyList();
-        System.out.println();
-
-        System.out.println("Representasi Adjacency Matrix:");
-        printAdjacencyMatrix();
-        System.out.println();
-    }
-
-    private void printAdjacencyList() {
-        System.out.println("Adjacency List:");
         for (int i = 0; i < numVertices; i++) {
             System.out.print("[" + i + "] -> ");
-            if (adjList.get(i).isEmpty()) {
+            if (adjListSize[i] == 0) {
                 System.out.print("NULL");
             } else {
-                for (Integer neighbor : adjList.get(i)) {
-                    System.out.print(neighbor + " -> ");
+                for (int j = 0; j < adjListSize[i]; j++) {
+                    System.out.print(adjList[i][j] + " -> ");
                 }
             }
             System.out.println();
         }
-    }
+        System.out.println();
 
-    private void printAdjacencyMatrix() {
-        System.out.println("Adjacency Matrix:");
+        System.out.println("Representasi Adjacency Matrix:");
         System.out.print("   ");
-        for (int i = 0; i < numVertices; i++) {
-            System.out.print(i + " ");
-        }
+        for (int i = 0; i < numVertices; i++) System.out.print(i + " ");
         System.out.println("\n---" + "-".repeat(numVertices * 2));
         for (int i = 0; i < numVertices; i++) {
             System.out.print(i + "| ");
@@ -184,9 +156,10 @@ public class Graph {
             }
             System.out.println();
         }
+        System.out.println();
     }
 
-    // main
+    // main method
     public static void main(String[] args) {
         int numVertices = 8;
 
@@ -205,7 +178,6 @@ public class Graph {
         undirectedGraph.DFS(0);
         System.out.println("Apakah graf undirected memiliki siklus? " + undirectedGraph.hasCycleUndirected());
     }
-
 
     private static Graph getDirectedGraph(int n) {
         Graph g = new Graph(n, Representation.LIST, true);
