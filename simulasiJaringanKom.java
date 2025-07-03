@@ -1,5 +1,33 @@
 import java.util.*;
 
+public class simulasiJaringanKom {
+    public static void main(String[] args) {
+        Graph network = new Graph();
+
+        network.addNode("Client");
+        network.addNode("Router Alpha");
+        network.addNode("Router Beta");
+        network.addNode("Main Server");
+
+        network.addEdge("Client", "Router Alpha");
+        network.addEdge("Router Alpha", "Router Beta");
+        network.addEdge("Router Beta", "Main Server");
+        network.addEdge("Client", "Router Beta");
+
+        network.printGraph();
+
+        List<ServerInfo> servers = network.getDirectServerLatencies("Client");
+
+        System.out.println("\nServer favorit (koneksi langsung dari Client):");
+        for (ServerInfo s : servers) System.out.println(s);
+
+        List<ServerInfo> sorted = ServerSorter.mergeSort(servers);
+
+        System.out.println("\nServer favorit setelah diurutkan (latency naik):");
+        for (ServerInfo s : sorted) System.out.println(s);
+    }
+}
+
 class GraphNode {
     String name;
 
@@ -8,9 +36,14 @@ class GraphNode {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o instanceof GraphNode) {
-            return this.name.equals(((GraphNode) o).name);
+    public String toString() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof GraphNode) {
+            return this.name.equals(((GraphNode) obj).name);
         }
         return false;
     }
@@ -19,16 +52,11 @@ class GraphNode {
     public int hashCode() {
         return name.hashCode();
     }
-
-    @Override
-    public String toString() {
-        return name;
-    }
 }
 
 class Edge {
     GraphNode target;
-    int weight; // latency (ms)
+    int weight; // latency in ms
 
     Edge(GraphNode target, int weight) {
         this.target = target;
@@ -38,13 +66,26 @@ class Edge {
 
 class Graph {
     Map<GraphNode, List<Edge>> adjacencyList = new HashMap<>();
-    Random rand = new Random(12345); // seed agar hasil random konsisten
+    Random rand = new Random(12346); // seed untuk hasil acak konsisten
+
+    public List<ServerInfo> getDirectServerLatencies(String fromNode) {
+        List<ServerInfo> list = new ArrayList<>();
+        GraphNode from = getNodeByName(fromNode);
+        if (from == null) return list;
+
+        for (Edge edge : adjacencyList.get(from)) {
+            list.add(new ServerInfo(edge.target.name, edge.weight));
+        }
+        return list;
+    }
+
     public void addNode(String name) {
-        adjacencyList.putIfAbsent(new GraphNode(name), new ArrayList<>());
+        GraphNode node = new GraphNode(name);
+        adjacencyList.putIfAbsent(node, new ArrayList<>());
     }
 
     public void addEdge(String from, String to) {
-        int weight = rand.nextInt(96) + 5; // random latency dari 5–100 ms
+        int weight = rand.nextInt(96) + 5; // 5-100 ms latency
         addEdge(from, to, weight);
     }
 
@@ -52,10 +93,13 @@ class Graph {
         GraphNode nodeFrom = getNodeByName(from);
         GraphNode nodeTo = getNodeByName(to);
 
-        if (nodeFrom == null || nodeTo == null) return;
+        if (nodeFrom == null || nodeTo == null) {
+            System.out.println("Node tidak ditemukan: " + from + " atau " + to);
+            return;
+        }
 
         adjacencyList.get(nodeFrom).add(new Edge(nodeTo, weight));
-        adjacencyList.get(nodeTo).add(new Edge(nodeFrom, weight)); // undirected
+        adjacencyList.get(nodeTo).add(new Edge(nodeFrom, weight)); // bidirectional
     }
 
     private GraphNode getNodeByName(String name) {
@@ -66,6 +110,7 @@ class Graph {
     }
 
     public void printGraph() {
+        System.out.println("=== Struktur Jaringan (Graph) ===");
         for (GraphNode node : adjacencyList.keySet()) {
             System.out.print(node + " -> ");
             for (Edge edge : adjacencyList.get(node)) {
@@ -74,81 +119,65 @@ class Graph {
             System.out.println();
         }
     }
+}
 
-    public void findShortestPath(String startName, String endName) {
-        GraphNode start = getNodeByName(startName);
-        GraphNode end = getNodeByName(endName);
+class ServerInfo {
+    String name;
+    int latency;
 
-        if (start == null || end == null) {
-            System.out.println("Node tidak ditemukan.");
-            return;
-        }
+    ServerInfo(String name, int latency) {
+        this.name = name;
+        this.latency = latency;
+    }
 
-        Map<GraphNode, Integer> distances = new HashMap<>();
-        Map<GraphNode, GraphNode> prev = new HashMap<>();
-        PriorityQueue<GraphNode> pq = new PriorityQueue<>(Comparator.comparingInt(distances::get));
-
-        for (GraphNode node : adjacencyList.keySet()) {
-            distances.put(node, Integer.MAX_VALUE);
-        }
-
-        distances.put(start, 0);
-        pq.add(start);
-
-        while (!pq.isEmpty()) {
-            GraphNode current = pq.poll();
-
-            for (Edge edge : adjacencyList.get(current)) {
-                int newDist = distances.get(current) + edge.weight;
-                if (newDist < distances.get(edge.target)) {
-                    distances.put(edge.target, newDist);
-                    prev.put(edge.target, current);
-                    pq.add(edge.target);
-                }
-            }
-        }
-
-        if (!distances.containsKey(end) || distances.get(end) == Integer.MAX_VALUE) {
-            System.out.println("Tidak ada jalur dari " + start + " ke " + end);
-            return;
-        }
-
-        List<GraphNode> path = new ArrayList<>();
-        for (GraphNode at = end; at != null; at = prev.get(at)) {
-            path.add(at);
-        }
-        Collections.reverse(path);
-
-        System.out.println("Jalur tercepat dari " + start + " ke " + end + ":");
-        for (int i = 0; i < path.size(); i++) {
-            System.out.print(path.get(i));
-            if (i < path.size() - 1) System.out.print(" -> ");
-        }
-        System.out.println(" (Total Latency: " + distances.get(end) + "ms)");
+    @Override
+    public String toString() {
+        return name + " (" + latency + "ms)";
     }
 }
 
-public class simulasiJaringanKom {
-    public static void main(String[] args) {
-        Graph network = new Graph();
+class ServerSorter {
 
-        network.addNode("ClientA");
-        network.addNode("Router1");
-        network.addNode("Router2");
-        network.addNode("ServerZ");
-        network.addNode("Router3");
+    public static List<ServerInfo> mergeSort(List<ServerInfo> servers) {
+        if (servers.size() <= 1) return servers;
 
-        network.addEdge("ClientA", "Router1");
-        network.addEdge("ClientA", "Router2");
-        network.addEdge("Router1", "Router2");
-        network.addEdge("Router2", "Router3");
-        network.addEdge("Router3", "ServerZ");
-        network.addEdge("Router1", "ServerZ");
+        int mid = servers.size() / 2;
+        List<ServerInfo> left = mergeSort(servers.subList(0, mid));
+        List<ServerInfo> right = mergeSort(servers.subList(mid, servers.size()));
 
-        System.out.println("== Struktur Jaringan ==");
-        network.printGraph();
+        return merge(left, right);
+    }
 
-        System.out.println("\n== Rute Tercepat ==");
-        network.findShortestPath("ClientA", "ServerZ");
+    private static List<ServerInfo> merge(List<ServerInfo> left, List<ServerInfo> right) {
+        List<ServerInfo> result = new ArrayList<>();
+        int i = 0, j = 0;
+
+        // sort berdasarkan latency
+        while (i < left.size() && j < right.size()) {
+            if (left.get(i).latency <= right.get(j).latency) {
+                result.add(left.get(i++));
+            } else {
+                result.add(right.get(j++));
+            }
+        }
+
+        while (i < left.size()) result.add(left.get(i++));
+        while (j < right.size()) result.add(right.get(j++));
+
+        return result;
+    }
+
+    public static int binarySearchByName(List<ServerInfo> servers, String targetName) {
+        int left = 0, right = servers.size() - 1;
+        
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            int cmp = servers.get(mid).name.compareToIgnoreCase(targetName);
+            
+            if (cmp == 0) return mid;
+            else if (cmp < 0) left = mid + 1;
+            else right = mid - 1;
+        }
+        return -1; // tidak ditemukan
     }
 }
