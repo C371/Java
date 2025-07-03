@@ -4,27 +4,70 @@ public class simulasiJaringanKom {
     public static void main(String[] args) {
         Graph network = new Graph();
 
-        network.addNode("Client");
-        network.addNode("Router Alpha");
-        network.addNode("Router Beta");
-        network.addNode("Main Server");
+    network.addNode("Client");
+    network.addNode("User Terminal");
+    network.addNode("Router Alpha");
+    network.addNode("Router Beta");
+    network.addNode("Router Gamma");
+    network.addNode("Router Delta");
+    network.addNode("Main Server");
+    network.addNode("Backup Server");
+    network.addNode("Mirror Server");
+    network.addNode("DNS Server");
 
-        network.addEdge("Client", "Router Alpha");
-        network.addEdge("Router Alpha", "Router Beta");
-        network.addEdge("Router Beta", "Main Server");
-        network.addEdge("Client", "Router Beta");
+    network.addEdge("Client", "Router Alpha");
+    network.addEdge("Client", "Router Delta");
+    network.addEdge("User Terminal", "Router Delta");
 
-        network.printGraph();
+    network.addEdge("Router Alpha", "Router Beta");
+    network.addEdge("Router Alpha", "Router Gamma");
 
-        List<ServerInfo> servers = network.getDirectServerLatencies("Client");
+    network.addEdge("Router Beta", "Main Server");
 
-        System.out.println("\nServer favorit (koneksi langsung dari Client):");
-        for (ServerInfo s : servers) System.out.println(s);
+    network.addEdge("Router Gamma", "Mirror Server");
+    network.addEdge("Router Gamma", "DNS Server");
 
-        List<ServerInfo> sorted = ServerSorter.mergeSort(servers);
+    network.addEdge("Router Delta", "Backup Server");
 
-        System.out.println("\nServer favorit setelah diurutkan (latency naik):");
-        for (ServerInfo s : sorted) System.out.println(s);
+    network.printGraph();
+
+        System.out.println("\nMengambil semua koneksi router → server favorit:");
+
+        List<String> routers = Arrays.asList(
+            "Router Alpha", "Router Beta", "Router Gamma", "Router Delta"
+        );
+
+        Set<String> serverNames = new HashSet<>(Arrays.asList(
+            "Main Server", "Backup Server", "Mirror Server", "DNS Server"
+        ));
+
+        List<ServerInfo> allServerConnections = new ArrayList<>();
+
+        for (String routerName : routers) {
+            GraphNode router = network.getNodeByName(routerName);
+            if (router == null) continue;
+
+            List<Edge> edges = network.adjacencyList.get(router);
+            for (Edge edge : edges) {
+                if (serverNames.contains(edge.target.name)) {
+                    String label = edge.target.name + " (via " + routerName + ")";
+                    allServerConnections.add(new ServerInfo(label, edge.weight));
+                }
+            }
+        }
+
+        // sebelum sort
+        System.out.println("\nSebelum diurutkan:");
+        for (ServerInfo s : allServerConnections) {
+            System.out.println(s);
+        }
+
+        // sort berdasarkan latency
+        List<ServerInfo> sorted = ServerSorter.mergeSort(allServerConnections);
+        System.out.println("\nSetelah diurutkan (latency naik):");
+        for (ServerInfo s : sorted) {
+            System.out.println(s);
+        }
     }
 }
 
@@ -85,7 +128,7 @@ class Graph {
     }
 
     public void addEdge(String from, String to) {
-        int weight = rand.nextInt(96) + 5; // 5-100 ms latency
+        int weight = rand.nextInt(996) + 5; // 5-100 ms latency
         addEdge(from, to, weight);
     }
 
@@ -102,7 +145,7 @@ class Graph {
         adjacencyList.get(nodeTo).add(new Edge(nodeFrom, weight)); // bidirectional
     }
 
-    private GraphNode getNodeByName(String name) {
+    public GraphNode getNodeByName(String name) {
         for (GraphNode node : adjacencyList.keySet()) {
             if (node.name.equals(name)) return node;
         }
